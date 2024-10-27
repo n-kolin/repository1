@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+    <form action="" id="form">
+
+        <input id="title" type="text" placeholder="title">
+        <input id="date" type="date">
+
+        <select name="" id="events">
+            <option value="-1">all events</option>
+        </select>
+
+
+
+
+    </form>
+    <button id="put">UPDATE</button>
+    <button id="post">ADD</button>
+    <button id="del">DELETE</button>
+
+    <script>
+
+
+        const src = "https://eventsapi.onrender.com/api/Events";
+        const src1 = 'http://localhost:5134/api/Event'
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth'
+            });
+            calendar.render();
+        });
+
+
+        window.onload = () => {
+            axios.get(src1).then((res) => {
+                console.log('get');
+                
+                var calendarEl = document.getElementById("calendar");
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: "dayGridMonth",
+                    events: res.data,
+                    
+                });
+                console.log(res.data);
+                calendar.render();
+                select(res.data)
+
+            });
+        }
+
+        select = (data) => {
+
+            data.forEach(event => {
+                const new_option = document.createElement('option');
+                new_option.value = event.id;
+                new_option.innerText = event.title;
+                document.querySelector("#events").append(new_option)
+            });
+        }
+
+        post.onclick = () => {
+
+
+            axios.post(src1, { 'title': title.value, 'start': date.value })
+                .then(res => {
+                    location.reload()
+                });
+        }
+
+        put.onclick = () => {
+            let index, newTitle, newDate
+            axios.get(src1).then(res => {
+
+                for (let i = 0; i < res.data.length; i++) {
+                    if ((res.data)[i].id == events.value) {
+                        index = (res.data)[i].id
+                        newTitle = (res.data)[i].title
+                        newDate = (res.data)[i].start
+                    }
+                }
+                date.value = newDate
+                title.value = newTitle
+            })
+            const new_button = document.createElement('button');
+            new_button.innerText = 'OK';
+            document.querySelector("#form").append(new_button)
+
+            document.querySelector('#form').onsubmit = (e) => {
+                e.preventDefault()
+
+                axios.put(`${src1}/${index}`, { 'id': index, 'start': date.value, 'title': title.value })
+
+                    .then(res => {
+                        location.reload()
+                    });
+            }
+        }
+
+        del.onclick = () => {
+            axios.delete(`${src1}/${events.value}`)
+                .then(res => {
+                    location.reload()
+
+                });
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <div id='calendar'></div>
+</body>
+
+</html>
